@@ -54,6 +54,8 @@
         .btn-secondary:hover { background-color: rgb(40,140,120); }
         .btn-alt { background-color: rgb(140,54,160); color: white; }
         .btn-alt:hover { background-color: rgb(120,40,140); }
+        .btn-warning { background-color: rgb(215,174,97); color: rgb(29,29,29); } /* lightOchre for import */
+        .btn-warning:hover { background-color: rgb(200,160,80); }
         .btn-danger { background-color: rgb(192, 80, 77); color: white; }
         .btn-danger:hover { background-color: rgb(172, 60, 57); }
         .btn-attendance-present { background-color: rgb(215,174,97); color: rgb(29,29,29); }
@@ -95,7 +97,7 @@
             </div>
 
             <div class="panel-right bg-[rgb(248,249,250)] p-6 rounded-lg shadow-md">
-                <h2 class="text-2xl font-semibold text-[rgb(3,71,81)] mb-6 border-b-2 border-[rgb(51,160,139)] pb-2">🎲 配對結果</h2>
+                <h2 class="text-2xl font-semibold text-[rgb(3,71,81)] mb-6 border-b-2 border-[rgb(51,160,139)] pb-2">🎲 配對結果與紀錄</h2>
                 <div class="controls grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <button id="startPairingBtn" class="w-full btn-primary font-bold py-3 px-4 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-[rgb(88,171,224)] focus:ring-opacity-50 text-lg">🚀 開始配對</button>
                     <button id="resetRecordsBtn" class="w-full btn-secondary font-semibold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[rgb(51,160,139)] focus:ring-opacity-50">🔄 重置紀錄</button>
@@ -107,10 +109,13 @@
                         <p id="noPairingMessage" class="text-[rgb(100,116,139)] pt-8">點擊「開始配對」來查看結果！</p>
                     </div>
                 </div>
-                <div class="export-controls grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <button id="exportJpgBtn" class="w-full btn-secondary font-semibold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[rgb(51,160,139)] focus:ring-opacity-50">🖼️ 匯出JPG截圖</button>
-                    <button id="exportCsvBtn" class="w-full btn-alt font-semibold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[rgb(140,54,160)] focus:ring-opacity-50">📄 匯出CSV列表</button>
+                <div class="export-import-controls grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <button id="exportJpgBtn" class="w-full btn-secondary font-semibold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[rgb(51,160,139)] focus:ring-opacity-50">🖼️ 匯出JPG</button>
+                    <button id="exportCsvBtn" class="w-full btn-alt font-semibold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[rgb(140,54,160)] focus:ring-opacity-50">📄 匯出CSV</button>
+                    <button id="importCsvBtn" class="w-full btn-warning font-semibold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[rgb(215,174,97)] focus:ring-opacity-50">📂 匯入CSV</button>
                 </div>
+                <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+
                 <div id="pairingHistorySection">
                     <details class="bg-white rounded-lg shadow-inner border border-[rgb(211,216,222)]">
                         <summary class="text-lg text-[rgb(27,38,41)] p-4 hover:bg-[rgb(231,229,224)] rounded-t-lg">📜 查看歷史配對紀錄</summary>
@@ -126,38 +131,27 @@
     </div>
 
     <script>
+        // Corporate Color Palette (remains the same)
         const corporateColors = { /* ... (JavaScript 色彩定義保持不變) ... */
-            textDark: 'rgb(29,29,29)',
-            textLight: 'rgb(255,255,255)',
-            skyBlue: 'rgb(88,171,224)',
-            skyBlueDarker: 'rgb(70,150,204)',
-            mediumTeal: 'rgb(51,160,139)',
-            mediumTealDarker: 'rgb(40,140,120)',
-            mediumPurple: 'rgb(140,54,160)',
-            mediumPurpleDarker: 'rgb(120,40,140)',
-            lightOchre: 'rgb(215,174,97)',
-            lightOchreDarker: 'rgb(200,160,80)',
-            paleMint: 'rgb(180,209,186)',
-            paleMintDarker: 'rgb(160,190,170)',
-            removeRed: 'rgb(192,80,77)',
-            removeRedDarker: 'rgb(172,60,57)',
+            textDark: 'rgb(29,29,29)', textLight: 'rgb(255,255,255)',
+            skyBlue: 'rgb(88,171,224)', skyBlueDarker: 'rgb(70,150,204)',
+            mediumTeal: 'rgb(51,160,139)', mediumTealDarker: 'rgb(40,140,120)',
+            mediumPurple: 'rgb(140,54,160)', mediumPurpleDarker: 'rgb(120,40,140)',
+            lightOchre: 'rgb(215,174,97)', lightOchreDarker: 'rgb(200,160,80)',
+            paleMint: 'rgb(180,209,186)', paleMintDarker: 'rgb(160,190,170)',
+            removeRed: 'rgb(192,80,77)', removeRedDarker: 'rgb(172,60,57)',
             personIcons: [
-                { bg: 'rgb(88,171,224)', text: 'rgb(29,29,29)' },
-                { bg: 'rgb(51,160,139)', text: 'rgb(255,255,255)' },
-                { bg: 'rgb(7,196,143)', text: 'rgb(29,29,29)' },
-                { bg: 'rgb(140,54,160)', text: 'rgb(255,255,255)' },
-                { bg: 'rgb(215,174,97)', text: 'rgb(29,29,29)' },
-                { bg: 'rgb(166,190,206)', text: 'rgb(29,29,29)' },
-                { bg: 'rgb(180,209,186)', text: 'rgb(29,29,29)' },
-                { bg: 'rgb(203,186,146)', text: 'rgb(29,29,29)' },
-                { bg: 'rgb(95,38,121)', text: 'rgb(255,255,255)' },
-                { bg: 'rgb(182,141,64)', text: 'rgb(255,255,255)' },
-                { bg: 'rgb(0,77,128)', text: 'rgb(255,255,255)' },
-                { bg: 'rgb(27,38,41)', text: 'rgb(255,255,255)' }
+                { bg: 'rgb(88,171,224)', text: 'rgb(29,29,29)' },{ bg: 'rgb(51,160,139)', text: 'rgb(255,255,255)' },
+                { bg: 'rgb(7,196,143)', text: 'rgb(29,29,29)' },{ bg: 'rgb(140,54,160)', text: 'rgb(255,255,255)' },
+                { bg: 'rgb(215,174,97)', text: 'rgb(29,29,29)' },{ bg: 'rgb(166,190,206)', text: 'rgb(29,29,29)' },
+                { bg: 'rgb(180,209,186)', text: 'rgb(29,29,29)' },{ bg: 'rgb(203,186,146)', text: 'rgb(29,29,29)' },
+                { bg: 'rgb(95,38,121)', text: 'rgb(255,255,255)' },{ bg: 'rgb(182,141,64)', text: 'rgb(255,255,255)' },
+                { bg: 'rgb(0,77,128)', text: 'rgb(255,255,255)' },{ bg: 'rgb(27,38,41)', text: 'rgb(255,255,255)' }
             ]
         };
 
-        // DOM Elements (IDs are unchanged)
+        // DOM Elements
+        // ... (previous DOM elements)
         const singleNameInput = document.getElementById('singleNameInput');
         const addSingleNameBtn = document.getElementById('addSingleNameBtn');
         const batchNameInput = document.getElementById('batchNameInput');
@@ -173,18 +167,23 @@
         const noPairingMessage = document.getElementById('noPairingMessage');
         const exportJpgBtn = document.getElementById('exportJpgBtn');
         const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const importCsvBtn = document.getElementById('importCsvBtn'); // New button
+        const csvFileInput = document.getElementById('csvFileInput'); // New file input
         const historyList = document.getElementById('historyList');
         const noHistoryMessage = document.getElementById('noHistoryMessage');
         const messageArea = document.getElementById('messageArea');
 
+        // Global state (remains the same)
         let namesList = []; 
         let pairingHistory = [];
         let usedPairs = new Set(); 
         let currentBatchPairsForExport = []; 
-
         let nameColorAssignments = new Map();
         let personColorRotationIndex = 0;
 
+        // --- Helper and Core Functions (getPersonDisplayColors, saveState, loadState, renderNamesList, createPersonIconElement, renderCurrentPairing, renderPairingHistory, showMessage, addPerson, handleAddSingleName, handleAddBatchNames, toggleAttendance, removePerson, getNormalizedPair, startPairing, resetRecords, exportToJPG, exportToCSV)
+        // These functions are largely the same as before, only minor adjustments if needed for new state variables or interactions
+        // ... (All previous JS functions like getPersonDisplayColors, saveState, loadState, etc., remain here) ...
         function getPersonDisplayColors(name) {
             if (!nameColorAssignments.has(name)) {
                 nameColorAssignments.set(name, corporateColors.personIcons[personColorRotationIndex % corporateColors.personIcons.length]);
@@ -192,7 +191,6 @@
             }
             return nameColorAssignments.get(name);
         }
-        
         function saveState() {
             localStorage.setItem('namesList_v3', JSON.stringify(namesList));
             localStorage.setItem('pairingHistory_v3', JSON.stringify(pairingHistory));
@@ -200,15 +198,10 @@
             localStorage.setItem('nameColorAssignments_v3', JSON.stringify(Array.from(nameColorAssignments.entries())));
             localStorage.setItem('personColorRotationIndex_v3', personColorRotationIndex.toString());
         }
-
         function loadState() {
             const storedNames = localStorage.getItem('namesList_v3');
             if (storedNames) {
-                namesList = JSON.parse(storedNames).map(item => ({
-                    ...item,
-                    present: typeof item.present === 'boolean' ? item.present : true, 
-                    id: item.id || crypto.randomUUID() 
-                }));
+                namesList = JSON.parse(storedNames).map(item => ({ ...item, present: typeof item.present === 'boolean' ? item.present : true, id: item.id || crypto.randomUUID() }));
             }
             const storedHistory = localStorage.getItem('pairingHistory_v3');
             if (storedHistory) pairingHistory = JSON.parse(storedHistory);
@@ -220,264 +213,218 @@
                 parsedMap.forEach(([name, colorObj]) => nameColorAssignments.set(name, colorObj));
             }
             const storedRotationIndex = localStorage.getItem('personColorRotationIndex_v3');
-            if (storedRotationIndex) {
-                personColorRotationIndex = parseInt(storedRotationIndex, 10);
-            }
+            if (storedRotationIndex) personColorRotationIndex = parseInt(storedRotationIndex, 10);
         }
-
         function renderNamesList() {
-            namesDisplayList.innerHTML = ''; 
-            nameCount.textContent = namesList.length;
-            if (namesList.length === 0) {
-                emptyNameListMessage.classList.remove('hidden');
-            } else {
+            namesDisplayList.innerHTML = ''; nameCount.textContent = namesList.length;
+            if (namesList.length === 0) emptyNameListMessage.classList.remove('hidden');
+            else {
                 emptyNameListMessage.classList.add('hidden');
                 namesList.forEach(person => {
                     const li = document.createElement('li');
                     li.className = `name-item bg-white hover:bg-[rgb(240,240,238)] rounded-md px-3 py-2 text-[rgb(29,29,29)] text-sm ${!person.present ? 'absent' : ''}`;
                     li.dataset.personId = person.id;
-                    const nameSpan = document.createElement('span');
-                    nameSpan.textContent = person.name;
-                    nameSpan.className = 'name-text truncate max-w-[50%] sm:max-w-[60%]';
-                    const buttonsDiv = document.createElement('div');
-                    buttonsDiv.className = 'action-buttons flex items-center';
-                    const attendanceBtn = document.createElement('button');
-                    attendanceBtn.textContent = person.present ? '缺席' : '出席';
-                    attendanceBtn.className = `text-xs font-semibold py-1 px-2 rounded-md shadow-sm ${ person.present ? 'btn-attendance-present' : 'btn-attendance-absent' }`;
+                    const nameSpan = document.createElement('span'); nameSpan.textContent = person.name; nameSpan.className = 'name-text truncate max-w-[50%] sm:max-w-[60%]';
+                    const buttonsDiv = document.createElement('div'); buttonsDiv.className = 'action-buttons flex items-center';
+                    const attendanceBtn = document.createElement('button'); attendanceBtn.textContent = person.present ? '缺席' : '出席';
+                    attendanceBtn.className = `text-xs font-semibold py-1 px-2 rounded-md shadow-sm ${person.present ? 'btn-attendance-present' : 'btn-attendance-absent'}`;
                     attendanceBtn.addEventListener('click', () => toggleAttendance(person.id));
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = '移除';
-                    removeBtn.className = 'btn-danger text-xs font-semibold py-1 px-2 rounded-md shadow-sm';
+                    const removeBtn = document.createElement('button'); removeBtn.textContent = '移除'; removeBtn.className = 'btn-danger text-xs font-semibold py-1 px-2 rounded-md shadow-sm';
                     removeBtn.addEventListener('click', () => removePerson(person.id));
-                    buttonsDiv.appendChild(attendanceBtn);
-                    buttonsDiv.appendChild(removeBtn);
-                    li.appendChild(nameSpan);
-                    li.appendChild(buttonsDiv);
-                    namesDisplayList.appendChild(li);
+                    buttonsDiv.appendChild(attendanceBtn); buttonsDiv.appendChild(removeBtn);
+                    li.appendChild(nameSpan); li.appendChild(buttonsDiv); namesDisplayList.appendChild(li);
                 });
             }
         }
-        
         function createPersonIconElement(name) {
-            const icon = document.createElement('span');
-            const colors = getPersonDisplayColors(name);
-            icon.style.backgroundColor = colors.bg;
-            icon.style.color = colors.text;
-            icon.className = `person-icon`;
-            icon.textContent = name;
-            return icon;
+            const icon = document.createElement('span'); const colors = getPersonDisplayColors(name);
+            icon.style.backgroundColor = colors.bg; icon.style.color = colors.text; icon.className = `person-icon`; icon.textContent = name; return icon;
         }
-
         function renderCurrentPairing(pairsArray, dateStr) {
-            currentBatchPairsForExport = pairsArray;
-            pairsContainer.innerHTML = '';
-            noPairingMessage.classList.add('hidden');
-            pairingDate.textContent = dateStr;
+            currentBatchPairsForExport = pairsArray; pairsContainer.innerHTML = ''; noPairingMessage.classList.add('hidden'); pairingDate.textContent = dateStr;
             const hasResults = pairsArray && pairsArray.length > 0;
-            exportJpgBtn.disabled = !hasResults;
-            exportJpgBtn.classList.toggle('opacity-50', !hasResults);
-            exportJpgBtn.classList.toggle('cursor-not-allowed', !hasResults);
-            exportCsvBtn.disabled = !hasResults;
-            exportCsvBtn.classList.toggle('opacity-50', !hasResults);
-            exportCsvBtn.classList.toggle('cursor-not-allowed', !hasResults);
+            exportJpgBtn.disabled = !hasResults; exportJpgBtn.classList.toggle('opacity-50', !hasResults); exportJpgBtn.classList.toggle('cursor-not-allowed', !hasResults);
+            exportCsvBtn.disabled = !hasResults; exportCsvBtn.classList.toggle('opacity-50', !hasResults); exportCsvBtn.classList.toggle('cursor-not-allowed', !hasResults);
             if (!hasResults) {
-                pairingDate.textContent = '---';
-                noPairingMessage.classList.remove('hidden');
-                noPairingMessage.textContent = '沒有足夠的出席人員進行配對，或沒有配對產生。';
-                return;
+                pairingDate.textContent = '---'; noPairingMessage.classList.remove('hidden'); noPairingMessage.textContent = '沒有足夠的出席人員進行配對，或沒有配對產生。'; return;
             }
-            pairsArray.forEach(pair => { 
-                const pairDiv = document.createElement('div');
-                pairDiv.className = 'pair flex items-center justify-center my-2 p-2 rounded-lg shadow';
-                pairDiv.style.backgroundColor = 'rgb(240,240,238)';
+            pairsArray.forEach(pair => {
+                const pairDiv = document.createElement('div'); pairDiv.className = 'pair flex items-center justify-center my-2 p-2 rounded-lg shadow'; pairDiv.style.backgroundColor = 'rgb(240,240,238)';
                 pair.forEach((personName, index) => {
                     pairDiv.appendChild(createPersonIconElement(personName));
-                    if (index < pair.length - 1) {
-                        const connector = document.createElement('span');
-                        connector.className = 'pair-connector';
-                        connector.innerHTML = '&harr;';
-                        pairDiv.appendChild(connector);
-                    }
+                    if (index < pair.length - 1) { const connector = document.createElement('span'); connector.className = 'pair-connector'; connector.innerHTML = '&harr;'; pairDiv.appendChild(connector); }
                 });
                 pairsContainer.appendChild(pairDiv);
             });
         }
-
         function renderPairingHistory() {
-            historyList.innerHTML = '';
-            if (pairingHistory.length === 0) {
-                noHistoryMessage.classList.remove('hidden');
-            } else {
+            historyList.innerHTML = ''; if (pairingHistory.length === 0) noHistoryMessage.classList.remove('hidden');
+            else {
                 noHistoryMessage.classList.add('hidden');
                 [...pairingHistory].reverse().forEach(record => {
-                    const li = document.createElement('li');
-                    li.className = 'p-3 rounded-md shadow-sm';
-                    li.style.backgroundColor = 'rgb(240,240,238)';
-                    const dateStrong = document.createElement('strong');
-                    dateStrong.className = 'block text-sm mb-1';
-                    dateStrong.style.color = 'rgb(27,38,41)';
-                    dateStrong.textContent = `日期：${record.date}`;
-                    li.appendChild(dateStrong);
-                    const pairsDiv = document.createElement('div');
-                    pairsDiv.className = 'space-y-1';
+                    const li = document.createElement('li'); li.className = 'p-3 rounded-md shadow-sm'; li.style.backgroundColor = 'rgb(240,240,238)';
+                    const dateStrong = document.createElement('strong'); dateStrong.className = 'block text-sm mb-1'; dateStrong.style.color = 'rgb(27,38,41)'; dateStrong.textContent = `日期：${record.date}`; li.appendChild(dateStrong);
+                    const pairsDiv = document.createElement('div'); pairsDiv.className = 'space-y-1';
                     record.pairs.forEach(pair => {
-                        const pairP = document.createElement('p');
-                        pairP.className = 'text-xs flex items-center justify-start flex-wrap';
-                        pairP.style.color = 'rgb(54,72,77)';
+                        const pairP = document.createElement('p'); pairP.className = 'text-xs flex items-center justify-start flex-wrap'; pairP.style.color = 'rgb(54,72,77)';
                         pair.forEach((name, index) => {
-                            const nameSpan = document.createElement('span');
-                            nameSpan.textContent = name;
-                            const colors = getPersonDisplayColors(name);
-                            nameSpan.style.backgroundColor = colors.bg;
-                            nameSpan.style.color = colors.text;
-                            nameSpan.className = `inline-block px-2 py-0.5 rounded-full text-xs mr-1 mb-1`;
-                            pairP.appendChild(nameSpan);
-                            if (index < pair.length - 1) {
-                                const sep = document.createElement('span');
-                                sep.textContent = '-';
-                                sep.className = 'mx-1';
-                                pairP.appendChild(sep);
-                            }
+                            const nameSpan = document.createElement('span'); nameSpan.textContent = name; const colors = getPersonDisplayColors(name);
+                            nameSpan.style.backgroundColor = colors.bg; nameSpan.style.color = colors.text; nameSpan.className = `inline-block px-2 py-0.5 rounded-full text-xs mr-1 mb-1`; pairP.appendChild(nameSpan);
+                            if (index < pair.length - 1) { const sep = document.createElement('span'); sep.textContent = '-'; sep.className = 'mx-1'; pairP.appendChild(sep); }
                         });
                         pairsDiv.appendChild(pairP);
                     });
-                    li.appendChild(pairsDiv);
-                    historyList.appendChild(li);
+                    li.appendChild(pairsDiv); historyList.appendChild(li);
                 });
             }
         }
-        
-        function showMessage(text, isError = false, duration = 3000) {
-            messageArea.textContent = text;
-            messageArea.className = `mt-6 text-center text-sm font-medium h-5 ${isError ? 'text-red-600' : 'text-green-600'}`;
-            setTimeout(() => { messageArea.textContent = ''; messageArea.className = 'mt-6 text-center text-sm font-medium h-5'; }, duration);
-        }
-        function addPerson(name) {
-            const trimmedName = name.trim();
-            if (trimmedName === '') { showMessage('人名不能為空！', true); return false; }
-            if (namesList.some(person => person.name === trimmedName)) { showMessage(`人名 "${trimmedName}" 已存在！`, true); return false; }
-            const newPerson = { id: crypto.randomUUID(), name: trimmedName, present: true };
-            namesList.push(newPerson);
-            getPersonDisplayColors(trimmedName);
-            return true;
-        }
-        function handleAddSingleName() {
-            const nameValue = singleNameInput.value;
-            if (addPerson(nameValue)) { showMessage(`已新增 "${nameValue.trim()}"`, false); singleNameInput.value = ''; renderNamesList(); saveState(); }
-        }
-        function handleAddBatchNames() {
-            const batchNamesText = batchNameInput.value;
-            const batchNamesArray = batchNamesText.split('\n').map(name => name.trim()).filter(name => name !== '');
-            if (batchNamesArray.length === 0) { showMessage('批次輸入內容為空！', true); return; }
-            let addedCount = 0;
-            batchNamesArray.forEach(name => { if (addPerson(name)) addedCount++; });
-            if (addedCount > 0) { showMessage(`成功新增 ${addedCount} 個人名。`, false); batchNameInput.value = ''; renderNamesList(); saveState(); }
-            else { showMessage('批次新增失敗，可能人名都已存在或為空。', true); }
-        }
-        function toggleAttendance(personId) {
-            const person = namesList.find(p => p.id === personId);
-            if (person) { person.present = !person.present; showMessage(`${person.name} 已標記為 ${person.present ? '出席' : '缺席'}`, false); renderNamesList(); saveState(); }
-        }
-        function removePerson(personIdToRemove) {
-            const personToRemove = namesList.find(p => p.id === personIdToRemove);
-            if (!personToRemove) return;
-            namesList = namesList.filter(person => person.id !== personIdToRemove);
-            showMessage(`已移除 "${personToRemove.name}"`, false); renderNamesList(); saveState();
-        }
+        function showMessage(text, isError = false, duration = 3000) { /* ... */ messageArea.textContent = text; messageArea.className = `mt-6 text-center text-sm font-medium h-5 ${isError ? 'text-red-600' : 'text-green-600'}`; setTimeout(() => { messageArea.textContent = ''; messageArea.className = 'mt-6 text-center text-sm font-medium h-5'; }, duration); }
+        function addPerson(name) { /* ... */ const trimmedName = name.trim(); if (trimmedName === '') { showMessage('人名不能為空！', true); return false; } if (namesList.some(person => person.name === trimmedName)) { showMessage(`人名 "${trimmedName}" 已存在！`, true); return false; } const newPerson = { id: crypto.randomUUID(), name: trimmedName, present: true }; namesList.push(newPerson); getPersonDisplayColors(trimmedName); return true; }
+        function handleAddSingleName() { /* ... */ const nameValue = singleNameInput.value; if (addPerson(nameValue)) { showMessage(`已新增 "${nameValue.trim()}"`, false); singleNameInput.value = ''; renderNamesList(); saveState(); } }
+        function handleAddBatchNames() { /* ... */ const batchNamesText = batchNameInput.value; const batchNamesArray = batchNamesText.split('\n').map(name => name.trim()).filter(name => name !== ''); if (batchNamesArray.length === 0) { showMessage('批次輸入內容為空！', true); return; } let addedCount = 0; batchNamesArray.forEach(name => { if (addPerson(name)) addedCount++; }); if (addedCount > 0) { showMessage(`成功新增 ${addedCount} 個人名。`, false); batchNameInput.value = ''; renderNamesList(); saveState(); } else { showMessage('批次新增失敗，可能人名都已存在或為空。', true); } }
+        function toggleAttendance(personId) { /* ... */ const person = namesList.find(p => p.id === personId); if (person) { person.present = !person.present; showMessage(`${person.name} 已標記為 ${person.present ? '出席' : '缺席'}`, false); renderNamesList(); saveState(); } }
+        function removePerson(personIdToRemove) { /* ... */ const personToRemove = namesList.find(p => p.id === personIdToRemove); if (!personToRemove) return; namesList = namesList.filter(person => person.id !== personIdToRemove); showMessage(`已移除 "${personToRemove.name}"`, false); renderNamesList(); saveState(); }
         function getNormalizedPair(name1, name2) { return [name1, name2].sort().join('-'); }
-        function startPairing() {
-            const presentParticipants = namesList.filter(person => person.present);
-            const presentParticipantNames = presentParticipants.map(p => p.name);
-            if (presentParticipantNames.length < 2) { showMessage('至少需要兩位出席者才能開始配對！', true); renderCurrentPairing([], new Date().toLocaleDateString('zh-TW')); return; }
-            let availableNames = [...presentParticipantNames].sort(() => 0.5 - Math.random());
-            const currentBatchPairs = [];
-            const tempUnavailableInThisRound = new Set();
-            while (availableNames.length >= 2) {
-                const person1Name = availableNames.find(name => !tempUnavailableInThisRound.has(name));
-                if (!person1Name) break;
-                availableNames = availableNames.filter(name => name !== person1Name);
-                tempUnavailableInThisRound.add(person1Name);
-                let person2Name = null;
-                let potentialPartners = availableNames.filter(name => !tempUnavailableInThisRound.has(name));
-                potentialPartners.sort(() => 0.5 - Math.random());
-                for (const candidateName of potentialPartners) {
-                    const normalizedPair = getNormalizedPair(person1Name, candidateName);
-                    if (!usedPairs.has(normalizedPair)) { person2Name = candidateName; break; }
-                }
-                if (!person2Name && potentialPartners.length > 0) person2Name = potentialPartners[0];
-                if (person2Name) {
-                    availableNames = availableNames.filter(name => name !== person2Name);
-                    tempUnavailableInThisRound.add(person2Name);
-                    currentBatchPairs.push([person1Name, person2Name]);
-                    usedPairs.add(getNormalizedPair(person1Name, person2Name));
-                } else {
-                    if (!tempUnavailableInThisRound.has(person1Name) && !currentBatchPairs.flat().includes(person1Name)) availableNames.push(person1Name);
-                }
-            }
-            const remainingNamesInRound = presentParticipantNames.filter(name => !tempUnavailableInThisRound.has(name));
-            if (remainingNamesInRound.length === 1 && currentBatchPairs.length > 0) {
-                const lastPersonName = remainingNamesInRound[0];
-                currentBatchPairs[currentBatchPairs.length - 1].push(lastPersonName);
-                tempUnavailableInThisRound.add(lastPersonName);
-            } else if (remainingNamesInRound.length === 1 && currentBatchPairs.length === 0) currentBatchPairs.push([remainingNamesInRound[0]]);
-            const today = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            if (currentBatchPairs.length > 0) { pairingHistory.push({ date: today, pairs: currentBatchPairs }); showMessage('配對成功！', false); }
-            else if (presentParticipantNames.length > 0) showMessage('無法產生新的配對。可能所有出席者的組合都已配對過。', true);
-            renderCurrentPairing(currentBatchPairs, today); renderPairingHistory(); saveState();
-        }
-        function resetRecords() {
-            if (window.confirm('確定要重置所有配對紀錄嗎？人名清單與出席狀態將會保留。')) {
-                pairingHistory = []; usedPairs.clear(); currentBatchPairsForExport = [];
-                renderCurrentPairing([], new Date().toLocaleDateString('zh-TW'));
-                pairingDate.textContent = '---'; noPairingMessage.classList.remove('hidden');
-                noPairingMessage.textContent = '點擊「開始配對」來查看結果！';
-                renderPairingHistory(); saveState(); showMessage('所有配對紀錄已重置。', false);
-            }
-        }
-        function exportToJPG() {
-            if (!currentBatchPairsForExport || currentBatchPairsForExport.length === 0) { showMessage('目前沒有配對結果可供匯出。', true); return; }
-            const originalBg = currentPairingResultDiv.style.backgroundColor;
-            currentPairingResultDiv.style.backgroundColor = 'white';
-            html2canvas(currentPairingResultDiv, { allowTaint: true, useCORS: true, scale: 2 })
-            .then(canvas => {
-                currentPairingResultDiv.style.backgroundColor = originalBg;
-                const image = canvas.toDataURL('image/jpeg', 0.9);
-                const link = document.createElement('a');
-                const currentDate = new Date().toISOString().slice(0,10);
-                link.download = `pairing_result_${currentDate}.jpg`; link.href = image; link.click();
-                showMessage('JPG截圖已開始下載。', false);
-            }).catch(err => {
-                currentPairingResultDiv.style.backgroundColor = originalBg;
-                console.error("匯出JPG失敗:", err); showMessage('匯出JPG截圖失敗，請查看控制台錯誤。', true);
-            });
-        }
-        function exportToCSV() {
-            if (!currentBatchPairsForExport || currentBatchPairsForExport.length === 0) { showMessage('目前沒有配對結果可供匯出。', true); return; }
-            let csvContent = "\uFEFF"; 
-            csvContent += "組別,成員1,成員2,成員3\n";
-            currentBatchPairsForExport.forEach((pair, index) => {
-                const groupNumber = index + 1;
-                const member1 = pair[0] || ""; const member2 = pair[1] || ""; const member3 = pair[2] || "";
-                csvContent += `${groupNumber},"${member1.replace(/"/g, '""')}","${member2.replace(/"/g, '""')}","${member3.replace(/"/g, '""')}"\n`;
-            });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const currentDate = new Date().toISOString().slice(0,10);
-            link.href = URL.createObjectURL(blob); link.download = `pairing_result_${currentDate}.csv`;
-            link.style.display = 'none'; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            showMessage('CSV列表已開始下載。', false);
+        function startPairing() { /* ... (no change to core logic) ... */ const presentParticipants = namesList.filter(person => person.present); const presentParticipantNames = presentParticipants.map(p => p.name); if (presentParticipantNames.length < 2) { showMessage('至少需要兩位出席者才能開始配對！', true); renderCurrentPairing([], new Date().toLocaleDateString('zh-TW')); return; } let availableNames = [...presentParticipantNames].sort(() => 0.5 - Math.random()); const currentBatchPairs = []; const tempUnavailableInThisRound = new Set(); while (availableNames.length >= 2) { const person1Name = availableNames.find(name => !tempUnavailableInThisRound.has(name)); if (!person1Name) break; availableNames = availableNames.filter(name => name !== person1Name); tempUnavailableInThisRound.add(person1Name); let person2Name = null; let potentialPartners = availableNames.filter(name => !tempUnavailableInThisRound.has(name)); potentialPartners.sort(() => 0.5 - Math.random()); for (const candidateName of potentialPartners) { const normalizedPair = getNormalizedPair(person1Name, candidateName); if (!usedPairs.has(normalizedPair)) { person2Name = candidateName; break; } } if (!person2Name && potentialPartners.length > 0) person2Name = potentialPartners[0]; if (person2Name) { availableNames = availableNames.filter(name => name !== person2Name); tempUnavailableInThisRound.add(person2Name); currentBatchPairs.push([person1Name, person2Name]); usedPairs.add(getNormalizedPair(person1Name, person2Name)); } else { if (!tempUnavailableInThisRound.has(person1Name) && !currentBatchPairs.flat().includes(person1Name)) availableNames.push(person1Name); } } const remainingNamesInRound = presentParticipantNames.filter(name => !tempUnavailableInThisRound.has(name)); if (remainingNamesInRound.length === 1 && currentBatchPairs.length > 0) { const lastPersonName = remainingNamesInRound[0]; currentBatchPairs[currentBatchPairs.length - 1].push(lastPersonName); tempUnavailableInThisRound.add(lastPersonName); } else if (remainingNamesInRound.length === 1 && currentBatchPairs.length === 0) currentBatchPairs.push([remainingNamesInRound[0]]); const today = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }); if (currentBatchPairs.length > 0) { pairingHistory.push({ date: today, pairs: currentBatchPairs }); showMessage('配對成功！', false); } else if (presentParticipantNames.length > 0) showMessage('無法產生新的配對。可能所有出席者的組合都已配對過。', true); renderCurrentPairing(currentBatchPairs, today); renderPairingHistory(); saveState(); }
+        function resetRecords() { /* ... (no change) ... */ if (window.confirm('確定要重置所有配對紀錄嗎？人名清單與出席狀態將會保留。')) { pairingHistory = []; usedPairs.clear(); currentBatchPairsForExport = []; renderCurrentPairing([], new Date().toLocaleDateString('zh-TW')); pairingDate.textContent = '---'; noPairingMessage.classList.remove('hidden'); noPairingMessage.textContent = '點擊「開始配對」來查看結果！'; renderPairingHistory(); saveState(); showMessage('所有配對紀錄已重置。', false); } }
+        function exportToJPG() { /* ... (no change) ... */ if (!currentBatchPairsForExport || currentBatchPairsForExport.length === 0) { showMessage('目前沒有配對結果可供匯出。', true); return; } const originalBg = currentPairingResultDiv.style.backgroundColor; currentPairingResultDiv.style.backgroundColor = 'white'; html2canvas(currentPairingResultDiv, { allowTaint: true, useCORS: true, scale: 2 }).then(canvas => { currentPairingResultDiv.style.backgroundColor = originalBg; const image = canvas.toDataURL('image/jpeg', 0.9); const link = document.createElement('a'); const currentDate = new Date().toISOString().slice(0,10); link.download = `pairing_result_${currentDate}.jpg`; link.href = image; link.click(); showMessage('JPG截圖已開始下載。', false); }).catch(err => { currentPairingResultDiv.style.backgroundColor = originalBg; console.error("匯出JPG失敗:", err); showMessage('匯出JPG截圖失敗，請查看控制台錯誤。', true); }); }
+        function exportToCSV() { /* ... (no change) ... */ if (!currentBatchPairsForExport || currentBatchPairsForExport.length === 0) { showMessage('目前沒有配對結果可供匯出。', true); return; } let csvContent = "\uFEFF"; csvContent += "組別,成員1,成員2,成員3\n"; currentBatchPairsForExport.forEach((pair, index) => { const groupNumber = index + 1; const member1 = pair[0] || ""; const member2 = pair[1] || ""; const member3 = pair[2] || ""; csvContent += `${groupNumber},"${member1.replace(/"/g, '""')}","${member2.replace(/"/g, '""')}","${member3.replace(/"/g, '""')}"\n`; }); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); const currentDate = new Date().toISOString().slice(0,10); link.href = URL.createObjectURL(blob); link.download = `pairing_result_${currentDate}.csv`; link.style.display = 'none'; document.body.appendChild(link); link.click(); document.body.removeChild(link); showMessage('CSV列表已開始下載。', false); }
+
+        // --- NEW CSV IMPORT FUNCTIONS ---
+        function handleImportCsv() {
+            csvFileInput.click(); // Trigger hidden file input
         }
 
+        function processUploadedCsv(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                showMessage('未選擇任何檔案。', true);
+                return;
+            }
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showMessage('請選擇一個 .csv 檔案。', true);
+                csvFileInput.value = null; // Reset file input
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const csvString = e.target.result;
+                    const importedHistoryEntry = parseCsvToHistoryEntry(csvString, file.name);
+                    
+                    if (importedHistoryEntry.pairs.length === 0) {
+                        showMessage('CSV檔案中未找到有效的配對資料。', true);
+                        return;
+                    }
+
+                    // Add to pairingHistory
+                    pairingHistory.push(importedHistoryEntry);
+
+                    // Update usedPairs
+                    importedHistoryEntry.pairs.forEach(pairArray => {
+                        if (pairArray.length === 2) {
+                            usedPairs.add(getNormalizedPair(pairArray[0], pairArray[1]));
+                        } else if (pairArray.length === 3) {
+                            usedPairs.add(getNormalizedPair(pairArray[0], pairArray[1]));
+                            usedPairs.add(getNormalizedPair(pairArray[0], pairArray[2]));
+                            usedPairs.add(getNormalizedPair(pairArray[1], pairArray[2]));
+                        }
+                        // Also ensure all imported names are known for color assignment
+                        pairArray.forEach(name => getPersonDisplayColors(name));
+                    });
+
+                    renderPairingHistory();
+                    saveState();
+                    showMessage(`成功從 ${file.name} 匯入配對紀錄。`, false);
+                } catch (error) {
+                    console.error("處理CSV檔案時發生錯誤:", error);
+                    showMessage('處理CSV檔案失敗，請確認格式是否正確。', true);
+                } finally {
+                     csvFileInput.value = null; // Reset file input to allow re-uploading same file
+                }
+            };
+            reader.onerror = () => {
+                showMessage('讀取檔案失敗。', true);
+                csvFileInput.value = null;
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseCsvToHistoryEntry(csvString, fileName) {
+            const lines = csvString.trim().split(/\r?\n/);
+            const importedPairs = [];
+            let fileDate = extractDateFromFilename(fileName);
+
+            if (lines.length <= 1) { // Must have header + at least one data line
+                throw new Error("CSV檔案內容過少或格式不正確 (至少需包含表頭和一筆資料)。");
+            }
+
+            // Validate header (optional but good practice)
+            const header = lines[0].trim().toLowerCase();
+            if (header !== "組別,成員1,成員2,成員3") {
+                 console.warn("CSV表頭與預期不符，但仍嘗試解析:", lines[0]);
+                 // showMessage('CSV表頭與預期不符，但仍嘗試解析。', false); // Could be too noisy
+            }
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line === "") continue;
+
+                // More robust CSV line parsing for fields potentially containing commas (if quoted)
+                // This regex handles quoted fields, including escaped quotes ("") inside.
+                const parts = [];
+                let currentMatch;
+                const regex = /(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)/g;
+                while ((currentMatch = regex.exec(line))) {
+                    let value = currentMatch[1];
+                    if (value.startsWith('"') && value.endsWith('"')) {
+                        value = value.substring(1, value.length - 1).replace(/""/g, '"');
+                    }
+                    parts.push(value);
+                }
+                
+                if (parts.length < 2) continue; // Need at least group and one member
+
+                // const groupNum = parseInt(parts[0].trim()); // Not strictly needed for history reconstruction
+                const members = parts.slice(1).map(member => member.trim()).filter(Boolean); // Get members, remove empty strings
+
+                if (members.length > 0) {
+                    importedPairs.push(members);
+                }
+            }
+            return { date: fileDate, pairs: importedPairs };
+        }
+
+        function extractDateFromFilename(filename) {
+            const match = filename.match(/pairing_result_(\d{4}-\d{2}-\d{2})\.csv/);
+            if (match && match[1]) {
+                const [year, month, day] = match[1].split('-');
+                try {
+                    // Format to match existing toLocaleDateString output (e.g., YYYY/MM/DD)
+                    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+                               .toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                } catch (e) { /* Fall through to default */ }
+            }
+            // Default to current date if filename doesn't match or parsing fails
+            return new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+
+        // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
             renderNamesList();
             renderPairingHistory();
+            
+            // Initialize current pairing display
             if (pairingHistory.length > 0 && pairingHistory[pairingHistory.length-1].pairs.length > 0) {
                 const lastPairing = pairingHistory[pairingHistory.length - 1];
                 renderCurrentPairing(lastPairing.pairs, lastPairing.date);
             } else {
                 renderCurrentPairing([], new Date().toLocaleDateString('zh-TW'));
             }
+
             addSingleNameBtn.addEventListener('click', handleAddSingleName);
             singleNameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleAddSingleName(); });
             addBatchNameBtn.addEventListener('click', handleAddBatchNames);
@@ -485,6 +432,8 @@
             resetRecordsBtn.addEventListener('click', resetRecords);
             exportJpgBtn.addEventListener('click', exportToJPG);
             exportCsvBtn.addEventListener('click', exportToCSV);
+            importCsvBtn.addEventListener('click', handleImportCsv); // New listener
+            csvFileInput.addEventListener('change', processUploadedCsv); // New listener
         });
     </script>
 </body>
